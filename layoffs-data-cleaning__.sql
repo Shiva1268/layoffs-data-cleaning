@@ -108,3 +108,51 @@ DROP COLUMN row_num;
 -- Final Check: View the cleaned data
 SELECT * 
 FROM world_layoffso.layoffs_staging2;
+SELECT *
+FROM world_layoffso.layoffs_staging2
+WHERE `date` IS NULL;
+-- Add new column for layoff severity
+ALTER TABLE world_layoffso.layoffs_staging2
+ADD COLUMN layoff_severity FLOAT;
+
+-- Calculate severity as a weighted score (example logic)
+UPDATE world_layoffso.layoffs_staging2
+SET layoff_severity = 
+    COALESCE(total_laid_off, 0) * 
+    COALESCE(REPLACE(percentage_laid_off, '%', '') / 100, 0);
+    
+    -- Total layoffs by year
+SELECT layoff_year, SUM(total_laid_off) AS total_layoffs
+FROM world_layoffso.layoffs_staging2
+GROUP BY layoff_year
+ORDER BY layoff_year;
+
+-- Top 10 companies with most layoffs
+SELECT company, SUM(total_laid_off) AS total
+FROM world_layoffso.layoffs_staging2
+GROUP BY company
+ORDER BY total DESC
+LIMIT 10;
+
+-- Average severity by industry
+SELECT industry, AVG(layoff_severity) AS avg_severity
+FROM world_layoffso.layoffs_staging2
+GROUP BY industry
+ORDER BY avg_severity DESC;
+
+SELECT layoff_year, SUM(total_laid_off) AS total_layoffs
+FROM world_layoffso.layoffs_staging2
+GROUP BY layoff_year
+ORDER BY layoff_year;
+
+SELECT company, SUM(total_laid_off) AS total
+FROM world_layoffso.layoffs_staging2
+GROUP BY company
+ORDER BY total DESC
+LIMIT 10;
+
+SELECT industry, AVG(layoff_severity) AS avg_severity
+FROM world_layoffso.layoffs_staging2
+GROUP BY industry
+ORDER BY avg_severity DESC;
+
